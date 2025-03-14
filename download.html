@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動画ダウンロード</title>
+</head>
+<body>
+    <h2>動画をダウンロード</h2>
+    <button onclick="downloadVideo()">ダウンロードリンク取得</button>
+    <p id="downloadLink"></p>
+
+    <script>
+        function downloadVideo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrCode = urlParams.get("code");
+
+            fetch(`https://your-cloudflare-api.com/download/${qrCode}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.video_url) {
+                    document.getElementById("downloadLink").innerHTML = 
+                        `<a href="${data.video_url}" download>ここをクリックして動画をダウンロード</a>`;
+                }
+            })
+            .catch(error => {
+                console.error("エラー:", error);
+                document.getElementById("downloadLink").innerText = "動画のダウンロードに失敗しました";
+            });
+        }
+    </script>
+</body>
+</html>

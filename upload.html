@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動画アップロード</title>
+</head>
+<body>
+    <h2>動画をアップロード</h2>
+    <input type="file" id="fileInput" accept="video/*">
+    <button onclick="uploadVideo()">アップロード</button>
+    <p id="statusMessage"></p>
+
+    <script>
+        function uploadVideo() {
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("ファイルを選択してください！");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrCode = urlParams.get("code");
+
+            fetch(`https://your-cloudflare-api.com/upload/${qrCode}`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("statusMessage").innerText = "アップロード成功！";
+            })
+            .catch(error => console.error("エラー:", error));
+        }
+    </script>
+</body>
+</html>
