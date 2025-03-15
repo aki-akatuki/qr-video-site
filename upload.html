@@ -32,9 +32,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("statusMessage").innerText = "アップロード成功！";
+                document.getElementById("statusMessage").innerText = data.message;
             })
-            .catch(error => console.error("エラー:", error));
+            .catch(error => {
+                console.error("エラー:", error);
+                document.getElementById("statusMessage").innerText = "アップロードに失敗しました";
+            });
+            
         }
     </script>
 </body>
