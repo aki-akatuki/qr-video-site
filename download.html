@@ -15,7 +15,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const qrCode = urlParams.get("code");
 
-            fetch(`https://your-cloudflare-api.com/download/${qrCode}`)
+            fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/download/${qrCode}`)
             .then(response => response.json())
             .then(data => {
                 if (data.video_url) {
