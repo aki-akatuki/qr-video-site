@@ -26,7 +26,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const qrCode = urlParams.get("code");
 
-            fetch(`https://your-cloudflare-api.com/upload/${qrCode}`, {
+            fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/upload/${qrCode}`, {
                 method: "POST",
                 body: formData
             })
