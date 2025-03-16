@@ -13,8 +13,21 @@
         function downloadVideo() {
             const urlParams = new URLSearchParams(window.location.search);
             const qrCode = urlParams.get("code");
-            // /download エンドポイントへ直接リダイレクトする
-            window.location.href = `https://qr-video-api-241792208765.asia-northeast1.run.app/download/${qrCode}`;
+
+            fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/download/${qrCode}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.video_url) {
+                    // 新しいタブで開くことで、スマホでもダウンロードしやすくする
+                    window.open(data.video_url, "_blank");
+                } else {
+                    alert("動画のダウンロードに失敗しました");
+                }
+            })
+            .catch(error => {
+                console.error("エラー:", error);
+                alert("動画のダウンロードに失敗しました");
+            });
         }
     </script>
 </body>
