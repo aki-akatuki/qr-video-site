@@ -18,8 +18,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.video_url) {
-                    // 新しいタブで開くことで、スマホでもダウンロードしやすくする
-                    window.open(data.video_url, "_blank");
+                    // ダウンロード専用リンクに直接遷移（新しいタブで開かない）
+                    window.location.href = data.video_url;
                 } else {
                     alert("動画のダウンロードに失敗しました");
                 }
