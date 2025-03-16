@@ -12,58 +12,77 @@
   <p id="statusMessage"></p>
 
   <script>
-    // ページ読み込み時に動画の存在をチェックする
+    // ページ読み込み時にQRコードの状態をチェックする
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const qrCode = urlParams.get("code");
-      // サーバーの /check エンドポイントにアクセスして、動画が存在するか確認
-      fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/check/${qrCode}`)
+
+      if (!qrCode) {
+        alert("QRコードが見つかりません。");
+        return;
+      }
+
+      // まず、QRコードが使用済みかどうかをチェック
+      fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/status/${qrCode}`)
         .then(response => response.json())
         .then(data => {
-          // 動画が存在する場合は download.html にリダイレクト
-          if (data.video_exists) {
-            window.location.href = "https://aki-akatuki.github.io/qr-video-site/download.html?code=" + qrCode;
+          if (data.used) {
+            // 使用済みならエラーページへリダイレクト
+            window.location.href = "https://aki-akatuki.github.io/qr-video-site/used.html";
+          } else {
+            // まだ使用可能なら、動画の有無をチェック
+            fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/check/${qrCode}`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.video_exists) {
+                  // すでに動画がアップロードされているならダウンロードページへ
+                  window.location.href = `https://aki-akatuki.github.io/qr-video-site/download.html?code=${qrCode}`;
+                }
+              })
+              .catch(error => console.error("動画の存在確認エラー:", error));
           }
         })
-        .catch(error => {
-          console.error("動画存在確認エラー:", error);
-        });
+        .catch(error => console.error("QRコードの状態確認エラー:", error));
     });
 
     function uploadVideo() {
       const fileInput = document.getElementById("fileInput");
+      const statusElem = document.getElementById("statusMessage");
+
       if (fileInput.files.length === 0) {
         alert("ファイルを選択してください！");
         return;
       }
-  
-      // アップロード開始時に「アップロード中…」を表示
-      const statusElem = document.getElementById("statusMessage");
+
       statusElem.innerText = "アップロード中…";
-  
+
       const file = fileInput.files[0];
       const formData = new FormData();
       formData.append("file", file);
-  
+
       const urlParams = new URLSearchParams(window.location.search);
       const qrCode = urlParams.get("code");
-  
+
       fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/upload/${qrCode}`, {
         method: "POST",
         body: formData
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("アップロードに失敗しました");
+        }
+        return response.json();
+      })
       .then(data => {
-        // アップロード成功時のメッセージ表示
         statusElem.innerText = "アップロードが成功しました。一度画面を閉じて再度QRコードを読み込んでください。";
-  
+        
         // アップロードフォームを無効化
         fileInput.disabled = true;
         document.querySelector("button").disabled = true;
       })
       .catch(error => {
-        console.error("エラー:", error);
-        statusElem.innerText = "アップロードに失敗しました";
+        console.error("アップロードエラー:", error);
+        statusElem.innerText = "アップロードに失敗しました。もう一度試してください。";
       });
     }
   </script>

@@ -8,26 +8,62 @@
 <body>
     <h2>動画をダウンロード</h2>
     <button onclick="downloadVideo()">ダウンロード開始</button>
+    <p id="statusMessage"></p>
 
     <script>
-        function downloadVideo() {
+        // ページ読み込み時にQRコードの状態をチェックする
+        window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const qrCode = urlParams.get("code");
 
+            if (!qrCode) {
+                alert("QRコードが見つかりません。");
+                return;
+            }
+
+            // QRコードが使用済みかどうかを確認
+            fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/status/${qrCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.used) {
+                        // 使用済みならエラーページへリダイレクト
+                        window.location.href = "https://aki-akatuki.github.io/qr-video-site/used.html";
+                    }
+                })
+                .catch(error => console.error("QRコードの状態確認エラー:", error));
+        });
+
+        function downloadVideo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrCode = urlParams.get("code");
+            const statusElem = document.getElementById("statusMessage");
+
+            if (!qrCode) {
+                alert("QRコードが見つかりません。");
+                return;
+            }
+
+            statusElem.innerText = "ダウンロードリンクを取得中…";
+
             fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/download/${qrCode}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.video_url) {
-                    // ダウンロード専用リンクに直接遷移（新しいタブで開かない）
-                    window.location.href = data.video_url;
-                } else {
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("動画が見つかりません");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.video_url) {
+                        // iOSやAndroidのブラウザでも動作するように、新しいタブで開く
+                        window.open(data.video_url, "_blank");
+                    } else {
+                        alert("動画のダウンロードに失敗しました");
+                    }
+                })
+                .catch(error => {
+                    console.error("ダウンロードエラー:", error);
                     alert("動画のダウンロードに失敗しました");
-                }
-            })
-            .catch(error => {
-                console.error("エラー:", error);
-                alert("動画のダウンロードに失敗しました");
-            });
+                });
         }
     </script>
 </body>
