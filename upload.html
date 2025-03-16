@@ -1,61 +1,79 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>動画アップロード</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動画アップロード</title>
 </head>
 <body>
-    <h2>動画をアップロード</h2>
-    <input type="file" id="fileInput" accept="video/*">
-    <button onclick="uploadVideo()">アップロード</button>
-    <p id="statusMessage"></p>
+  <h2>動画をアップロード</h2>
+  <input type="file" id="fileInput" accept="video/*">
+  <button onclick="uploadVideo()">アップロード</button>
+  <p id="statusMessage"></p>
 
-    <script>
-        function uploadVideo() {
-            const fileInput = document.getElementById("fileInput");
-            if (fileInput.files.length === 0) {
-                alert("ファイルを選択してください！");
-                return;
-            }
-    
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append("file", file);
-    
-            const urlParams = new URLSearchParams(window.location.search);
-            const qrCode = urlParams.get("code");
-    
-            fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/upload/${qrCode}`, {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // アップロード成功時のメッセージ表示
-                const statusElem = document.getElementById("statusMessage");
-                statusElem.innerText = "アップロード済みです。以下のURLよりダウンロードを行ってください。";
-                
-                // ダウンロードURLの生成（サーバー側で返すか、ここで生成するかは設計次第）
-                const downloadUrl = "https://aki-akatuki.github.io/qr-video-site/download.html?code=" + qrCode;
-                const downloadLink = document.createElement("a");
-                downloadLink.href = downloadUrl;
-                downloadLink.innerText = "動画をダウンロード";
-                downloadLink.target = "_blank";
-                
-                // 改行を追加してからリンクを表示
-                statusElem.appendChild(document.createElement("br"));
-                statusElem.appendChild(downloadLink);
-                
-                // アップロードフォームを無効化
-                fileInput.disabled = true;
-                document.querySelector("button").disabled = true;
-            })
-            .catch(error => {
-                console.error("エラー:", error);
-                document.getElementById("statusMessage").innerText = "アップロードに失敗しました";
-            });
-        }
-    </script>
+  <script>
+    // ページ読み込み時に動画の存在をチェックする
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrCode = urlParams.get("code");
+      // サーバーの /check エンドポイントにアクセス
+      fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/check/${qrCode}`)
+        .then(response => response.json())
+        .then(data => {
+          // 動画が存在する場合は download.html にリダイレクト
+          if (data.video_exists) {
+            window.location.href = "https://aki-akatuki.github.io/qr-video-site/download.html?code=" + qrCode;
+          }
+        })
+        .catch(error => {
+          console.error("動画存在確認エラー:", error);
+        });
+    });
+
+    function uploadVideo() {
+      const fileInput = document.getElementById("fileInput");
+      if (fileInput.files.length === 0) {
+        alert("ファイルを選択してください！");
+        return;
+      }
+  
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrCode = urlParams.get("code");
+  
+      fetch(`https://qr-video-api-241792208765.asia-northeast1.run.app/upload/${qrCode}`, {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        // アップロード成功時のメッセージ表示
+        const statusElem = document.getElementById("statusMessage");
+        statusElem.innerText = "アップロード済みです。以下のURLよりダウンロードを行ってください。";
+        
+        // ダウンロードURLの生成（ここでは GitHub Pages 上の download.html へ遷移）
+        const downloadUrl = "https://aki-akatuki.github.io/qr-video-site/download.html?code=" + qrCode;
+        const downloadLink = document.createElement("a");
+        downloadLink.href = downloadUrl;
+        downloadLink.innerText = "動画をダウンロード";
+        downloadLink.target = "_blank";
+        
+        // 改行を追加してからリンクを表示
+        statusElem.appendChild(document.createElement("br"));
+        statusElem.appendChild(downloadLink);
+        
+        // アップロードフォームを無効化
+        fileInput.disabled = true;
+        document.querySelector("button").disabled = true;
+      })
+      .catch(error => {
+        console.error("エラー:", error);
+        document.getElementById("statusMessage").innerText = "アップロードに失敗しました";
+      });
+    }
+  </script>
 </body>
 </html>
