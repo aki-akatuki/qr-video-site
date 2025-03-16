@@ -37,7 +37,7 @@
                 statusElem.innerText = "アップロード済みです。以下のURLよりダウンロードを行ってください。";
                 
                 // ダウンロードURLの生成（サーバー側で返すか、ここで生成するかは設計次第）
-                const downloadUrl = "https://qr-video-api-241792208765.asia-northeast1.run.app/download/" + qrCode;
+                const downloadUrl = "https://aki-akatuki.github.io/qr-video-site/download.html?code=" + qrCode;
                 const downloadLink = document.createElement("a");
                 downloadLink.href = downloadUrl;
                 downloadLink.innerText = "動画をダウンロード";
